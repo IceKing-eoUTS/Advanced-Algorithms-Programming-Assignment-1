@@ -1,0 +1,34 @@
+Start testing: Sep 12 23:19 AUS Eastern Standard Time
+----------------------------------------------------------
+1/1 Testing: test_arrays
+1/1 Test: test_arrays
+Command: "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build/test_arrays.exe"
+Directory: C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build
+"test_arrays" start time: Sep 12 23:19 AUS Eastern Standard Time
+Output:
+----------------------------------------------------------
+[PASS] empty array behaviour
+[PASS] first insertion and accessors
+[PASS] migration boundaries
+[PASS] many consecutive migrations
+[PASS] at/front/back/mutation
+[PASS] clear and reuse
+[PASS] copy, move, and self assignment
+[PASS] move-only values
+[PASS] no leaks or double destruction
+[PASS] throwing migration
+[PASS] throwing new element
+[PASS] randomised differential
+[PASS] load supplied random input
+[PASS] CSV error handling
+[PASS] size and overflow safeguards
+15 test(s) passed
+<end of output>
+Test time =   0.16 sec
+----------------------------------------------------------
+Test Passed.
+"test_arrays" end time: Sep 12 23:19 AUS Eastern Standard Time
+"test_arrays" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 12 23:19 AUS Eastern Standard Time
