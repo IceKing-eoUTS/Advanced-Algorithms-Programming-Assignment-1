@@ -1,0 +1,32 @@
+[
+{
+  "directory": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles\\resizable_array_demo.dir\\includes_CXX.rsp -g -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles\\resizable_array_demo.dir\\src\\resizable_array_demo.cpp.obj -c C:\\Users\\Colin\\AdAlgLabs\\Advanced-Algorithms-Programming-Assignment-1\\src\\resizable_array_demo.cpp",
+  "file": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/src/resizable_array_demo.cpp",
+  "output": "CMakeFiles/resizable_array_demo.dir/src/resizable_array_demo.cpp.obj"
+},
+{
+  "directory": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles\\baseline_demo.dir\\includes_CXX.rsp -g -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles\\baseline_demo.dir\\src\\baseline_demo.cpp.obj -c C:\\Users\\Colin\\AdAlgLabs\\Advanced-Algorithms-Programming-Assignment-1\\src\\baseline_demo.cpp",
+  "file": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/src/baseline_demo.cpp",
+  "output": "CMakeFiles/baseline_demo.dir/src/baseline_demo.cpp.obj"
+},
+{
+  "directory": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles\\empirical_study.dir\\includes_CXX.rsp -g -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles\\empirical_study.dir\\src\\empirical_study.cpp.obj -c C:\\Users\\Colin\\AdAlgLabs\\Advanced-Algorithms-Programming-Assignment-1\\src\\empirical_study.cpp",
+  "file": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/src/empirical_study.cpp",
+  "output": "CMakeFiles/empirical_study.dir/src/empirical_study.cpp.obj"
+},
+{
+  "directory": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe   -g -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles\\generate_input.dir\\tools\\generate_input.cpp.obj -c C:\\Users\\Colin\\AdAlgLabs\\Advanced-Algorithms-Programming-Assignment-1\\tools\\generate_input.cpp",
+  "file": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/tools/generate_input.cpp",
+  "output": "CMakeFiles/generate_input.dir/tools/generate_input.cpp.obj"
+},
+{
+  "directory": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles\\test_arrays.dir\\includes_CXX.rsp -g -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles\\test_arrays.dir\\tests\\test_arrays.cpp.obj -c C:\\Users\\Colin\\AdAlgLabs\\Advanced-Algorithms-Programming-Assignment-1\\tests\\test_arrays.cpp",
+  "file": "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/tests/test_arrays.cpp",
+  "output": "CMakeFiles/test_arrays.dir/tests/test_arrays.cpp.obj"
+}
+]

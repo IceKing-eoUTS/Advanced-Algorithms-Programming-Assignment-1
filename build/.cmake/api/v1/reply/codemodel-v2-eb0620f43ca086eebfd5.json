@@ -1,0 +1,114 @@
+{
+	"configurations" : 
+	[
+		{
+			"abstractTargets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "array_headers::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-array_headers-Debug-15b566d7a5a31f3e564e.json",
+					"name" : "array_headers",
+					"projectIndex" : 0
+				}
+			],
+			"directories" : 
+			[
+				{
+					"abstractTargetIndexes" : 
+					[
+						0
+					],
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-b5805d5c08fd3d92def4.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"abstractTargetIndexes" : 
+					[
+						0
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "ResizableArrayAssignment",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "baseline_demo::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-baseline_demo-Debug-40cf94714ad5554cf84b.json",
+					"name" : "baseline_demo",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "empirical_study::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-empirical_study-Debug-fb7af86c4574d445ad96.json",
+					"name" : "empirical_study",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "generate_input::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-generate_input-Debug-277a56b7b51b76d26fe8.json",
+					"name" : "generate_input",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "resizable_array_demo::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-resizable_array_demo-Debug-a6b91a496fb2eda1fa5e.json",
+					"name" : "resizable_array_demo",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "test_arrays::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-test_arrays-Debug-954d1437afe70ee0ba54.json",
+					"name" : "test_arrays",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1/build",
+		"source" : "C:/Users/Colin/AdAlgLabs/Advanced-Algorithms-Programming-Assignment-1"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 11
+	}
+}
