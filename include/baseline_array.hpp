@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -50,18 +51,30 @@ public:
     }
 
     reference front() {
+        if (empty()) {
+            throw std::out_of_range("BaselineArray::front on empty array");
+        }
         return data_.front();
     }
 
     const_reference front() const {
+        if (empty()) {
+            throw std::out_of_range("BaselineArray::front on empty array");
+        }
         return data_.front();
     }
 
     reference back() {
+        if (empty()) {
+            throw std::out_of_range("BaselineArray::back on empty array");
+        }
         return data_.back();
     }
 
     const_reference back() const {
+        if (empty()) {
+            throw std::out_of_range("BaselineArray::back on empty array");
+        }
         return data_.back();
     }
 
@@ -75,6 +88,10 @@ public:
 
     void clear() noexcept {
         data_.clear();
+    }
+
+    [[nodiscard]] size_type capacity() const noexcept {
+        return data_.capacity();
     }
 
 private:

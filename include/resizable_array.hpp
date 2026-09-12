@@ -139,6 +139,18 @@ public:
         return size_ == 0;
     }
 
+    [[nodiscard]] size_type estimated_allocated_slots() const noexcept {
+        if (capacity_ > std::numeric_limits<size_type>::max() - old_capacity_) {
+            return std::numeric_limits<size_type>::max();
+        }
+        return capacity_ + old_capacity_;
+    }
+
+    [[nodiscard]] static size_type max_size() noexcept {
+        std::allocator<T> allocator;
+        return std::allocator_traits<std::allocator<T>>::max_size(allocator);
+    }
+
     void clear() noexcept(std::is_nothrow_destructible_v<T>) {
         release_all();
     }
@@ -176,6 +188,10 @@ private:
             return nullptr;
         }
 
+        if (capacity > max_size()) {
+            throw std::length_error("ResizableArray capacity exceeds max_size");
+        }
+
         std::allocator<T> allocator;
         return std::allocator_traits<std::allocator<T>>::allocate(allocator,
                                                                   capacity);
@@ -197,7 +213,7 @@ private:
             return kInitialCapacity;
         }
 
-        if (current > std::numeric_limits<size_type>::max() / 2) {
+        if (current > max_size() / 2) {
             throw std::length_error("ResizableArray capacity overflow");
         }
 
@@ -209,7 +225,11 @@ private:
             return 0;
         }
 
-        if (live_size > std::numeric_limits<size_type>::max() / 2) {
+        if (live_size > max_size()) {
+            throw std::length_error("ResizableArray size exceeds max_size");
+        }
+
+        if (live_size > max_size() / 2) {
             return live_size;
         }
 
