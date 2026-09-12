@@ -64,6 +64,10 @@ public:
 
     template <typename... Args>
     reference emplace_back(Args&&... args) {
+        // Core algorithm entry point:
+        // prepare_for_insert() either creates the first buffer or starts an
+        // incremental migration before the current buffer is full. The new
+        // element is then constructed at its final logical index in data_.
         prepare_for_insert();
 
         const size_type insert_index = size_;
@@ -71,6 +75,10 @@ public:
         std::construct_at(destination, std::forward<Args>(args)...);
 
         try {
+            // Tricky part: migration happens after constructing the new
+            // element but before size_ is increased. If migrating an old
+            // element throws, the just-constructed new element is destroyed
+            // and the public size remains unchanged.
             migrate_some(kMigrationWorkPerInsertion);
         } catch (...) {
             std::destroy_at(destination);
@@ -170,10 +178,19 @@ private:
     static constexpr size_type kInitialCapacity = 2;
     static constexpr size_type kMigrationWorkPerInsertion = 1;
 
+    // Core data structure organization:
+    // data_ is always the current/new buffer. old_data_ is non-null only while
+    // an incremental migration is active. size_ is the public logical length.
     T* data_ = nullptr;
     size_type capacity_ = 0;
     size_type size_ = 0;
 
+    // Migration invariant:
+    // - [0, migrated_) has already been constructed in data_.
+    // - [migrated_, migration_size_) is still live in old_data_.
+    // - [migration_size_, size_) contains new insertions in data_.
+    // This invariant is established in begin_migration(), advanced in
+    // migrate_one(), and relied on by element_at() and destroy_live_elements().
     T* old_data_ = nullptr;
     size_type old_capacity_ = 0;
     size_type migration_size_ = 0;
@@ -244,6 +261,10 @@ private:
             return;
         }
 
+        // What breaks if this threshold is delayed until capacity_ is full?
+        // With only one migrated element per insertion, there would not be
+        // enough future insertions to finish migration before the new buffer
+        // needs to grow again, and worst-case O(1) push_back would be lost.
         if (!migrating() && size_ >= capacity_ / 2) {
             begin_migration();
         }
@@ -253,6 +274,9 @@ private:
         const size_type replacement_capacity = doubled_capacity(capacity_);
         T* replacement = allocate_storage(replacement_capacity);
 
+        // Establish the migration invariant. No element is moved here; the
+        // old buffer simply becomes the migration source and the replacement
+        // buffer becomes the insertion destination.
         old_data_ = data_;
         old_capacity_ = capacity_;
         migration_size_ = size_;
@@ -273,6 +297,8 @@ private:
         T* source = old_data_ + migrated_;
         T* destination = data_ + migrated_;
 
+        // If moving might throw and copying is available, copy instead. That
+        // keeps the source element intact until construction in data_ succeeds.
         if constexpr (std::is_nothrow_move_constructible_v<T> ||
                       !std::is_copy_constructible_v<T>) {
             std::construct_at(destination, std::move(*source));
@@ -280,6 +306,8 @@ private:
             std::construct_at(destination, *source);
         }
 
+        // Advance the invariant exactly one slot: after this destroy_at,
+        // source is no longer live and destination is the live copy/move.
         std::destroy_at(source);
         ++migrated_;
 
@@ -301,6 +329,9 @@ private:
             return data_[index];
         }
 
+        // Reliance on the migration invariant:
+        // already-migrated old elements and newly inserted elements are in
+        // data_, while the not-yet-migrated middle region remains in old_data_.
         if (index < migrated_ || index >= migration_size_) {
             return data_[index];
         }
@@ -313,6 +344,8 @@ private:
             return data_[index];
         }
 
+        // This branch mirrors the mutable overload so const and non-const
+        // indexing observe the same logical sequence during migration.
         if (index < migrated_ || index >= migration_size_) {
             return data_[index];
         }
@@ -331,6 +364,9 @@ private:
         for (size_type index = 0; index < migrated_; ++index) {
             std::destroy_at(data_ + index);
         }
+        // What breaks if this loop is changed to start at 0? Elements already
+        // moved to data_ would be destroyed twice: once in data_ above and once
+        // again through their old storage here.
         for (size_type index = migrated_; index < migration_size_; ++index) {
             std::destroy_at(old_data_ + index);
         }
@@ -354,6 +390,9 @@ private:
     }
 
     void copy_from(const ResizableArray& other) {
+        // Copies are normalized into one fresh non-migrating buffer. That keeps
+        // the copied object simple while preserving the logical order observed
+        // through other[index], whether other is currently migrating or not.
         const size_type desired_capacity = capacity_for_size(other.size_);
         T* storage = allocate_storage(desired_capacity);
         size_type constructed = 0;
@@ -376,6 +415,9 @@ private:
     }
 
     void steal_from(ResizableArray& other) noexcept {
+        // Move construction/assignment transfers both buffers and all migration
+        // counters. Resetting other prevents two arrays from owning and later
+        // destroying the same raw storage.
         data_ = other.data_;
         capacity_ = other.capacity_;
         size_ = other.size_;

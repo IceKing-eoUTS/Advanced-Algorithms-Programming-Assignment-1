@@ -13,6 +13,8 @@
 #include <vector>
 
 struct CsvLoadOptions {
+    // These switches let the same parser serve two jobs: strict benchmark
+    // loading and tests that intentionally feed malformed input.
     bool allow_invalid_lines = false;
     bool require_header = false;
     bool validate_sequential_index = false;
@@ -27,6 +29,9 @@ struct CsvLoadResult {
 namespace input_csv_detail {
 
 inline std::string_view trim(std::string_view text) {
+    // Small parser helper: trim views instead of allocating new strings for
+    // every field. The original line storage stays alive for the duration of
+    // parsing that line.
     while (!text.empty() &&
            (text.front() == ' ' || text.front() == '\t' ||
             text.front() == '\r')) {
@@ -53,6 +58,8 @@ Integer parse_integer(std::string_view text, std::size_t line_number) {
     Integer value{};
     const char* first = text.data();
     const char* last = text.data() + text.size();
+    // Tricky parser detail: from_chars reports where parsing stopped. Checking
+    // pointer == last rejects partially valid fields like "123abc".
     const auto [pointer, error] = std::from_chars(first, last, value);
     if (error != std::errc{} || pointer != last) {
         throw std::runtime_error("invalid integer field on line " +
@@ -69,6 +76,8 @@ inline int parse_value_line(std::string_view line,
     line = trim(line);
     const std::size_t first_comma = line.find(',');
     if (first_comma == std::string_view::npos) {
+        // Accept a single-column integer line so tests and ad hoc data files can
+        // use either "value" or "index,value" rows.
         return parse_integer<int>(line, line_number);
     }
 
@@ -91,6 +100,9 @@ inline int parse_value_line(std::string_view line,
 
     if (options.validate_sequential_index &&
         static_cast<std::size_t>(parsed_index) != expected_index) {
+        // Invariant for checked-in generator output: row indices must match the
+        // number of values already accepted. The empirical study relies on this
+        // to know that both arrays receive exactly the intended input prefix.
         throw std::runtime_error("CSV index is not sequential on line " +
                                  std::to_string(line_number));
     }
@@ -106,6 +118,8 @@ inline bool is_header(std::string_view line) {
 
 inline CsvLoadResult load_integer_csv(const std::filesystem::path& path,
                                       CsvLoadOptions options = {}) {
+    // Core loader organization: read line by line, validate optional header and
+    // index invariants, then append only accepted values to the result vector.
     std::ifstream input(path);
     if (!input) {
         throw std::runtime_error("could not open input file: " + path.string());
@@ -152,6 +166,9 @@ inline CsvLoadResult load_integer_csv(const std::filesystem::path& path,
             result.values.push_back(input_csv_detail::parse_value_line(
                 trimmed, result.values.size(), options, result.physical_lines));
         } catch (...) {
+            // What breaks if this continue-on-error path appended a dummy value?
+            // A partially invalid file would shift later indices and no longer
+            // represent the original sequence of valid values.
             if (!options.allow_invalid_lines) {
                 throw;
             }

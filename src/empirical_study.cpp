@@ -26,9 +26,14 @@ namespace {
 
 using Clock = std::chrono::steady_clock;
 
+// Preventing optimization is part of the benchmark, not the data structure.
+// Results flow into this sink after timed regions so the compiler cannot prove
+// that array construction and indexed reads are unused.
 std::atomic<std::uint64_t> benchmark_sink{0};
 
 struct Config {
+    // Centralized command-line configuration. Keeping this as one struct makes
+    // it clear which options affect the study design and which only affect I/O.
     std::filesystem::path input_path;
     std::filesystem::path output_path;
     std::size_t max_n = 0;
@@ -54,6 +59,9 @@ struct ThroughputResult {
 };
 
 struct ResultRow {
+    // One row maps directly to one CSV output line. The throughput and latency
+    // fields come from different experiments on purpose; combining them would
+    // let per-operation clock overhead pollute the throughput measurement.
     std::string structure;
     std::size_t n = 0;
     int trial = 0;
@@ -86,6 +94,8 @@ std::uint64_t checksum_update(std::uint64_t checksum,
 
 template <typename Array>
 std::uint64_t checksum_array(const Array& array) {
+    // The checksum is the benchmark invariant: both structures must expose the
+    // same logical sequence before their timings are considered meaningful.
     std::uint64_t checksum = 0;
     for (std::size_t index = 0; index < array.size(); ++index) {
         checksum = checksum_update(checksum, array[index], index);
@@ -138,6 +148,9 @@ std::uint64_t parse_u64_arg(std::string_view text, std::string_view name) {
 std::vector<std::size_t> parse_size_list(std::string_view text) {
     std::vector<std::size_t> sizes;
     while (!text.empty()) {
+        // Tricky parser detail: parse one comma-delimited field at a time, then
+        // remove exactly that prefix. Forgetting remove_prefix would loop
+        // forever on any multi-size argument.
         const std::size_t comma = text.find(',');
         const std::string_view item =
             comma == std::string_view::npos ? text : text.substr(0, comma);
@@ -244,6 +257,9 @@ std::vector<std::size_t> build_size_list(std::size_t available,
     } else {
         sizes.push_back(0);
         for (std::size_t boundary = 1; boundary <= max_n;) {
+            // Core study design: include powers of two and the sizes just
+            // before/after them, because those are where vector growth and the
+            // custom array's migration threshold are easiest to observe.
             if (boundary > 1) {
                 sizes.push_back(boundary - 1);
             }
@@ -333,6 +349,9 @@ ThroughputResult measure_throughput(const std::vector<int>& values,
                                     std::size_t n) {
     Array array;
 
+    // Throughput experiment: there is intentionally no clock call inside the
+    // insertion loop. What breaks if we time every push here? The clock-call
+    // overhead becomes part of total_ns and hides the bulk insertion rate.
     std::atomic_signal_fence(std::memory_order_seq_cst);
     const auto start = Clock::now();
     for (std::size_t index = 0; index < n; ++index) {
@@ -362,6 +381,9 @@ Percentiles measure_push_latency(const std::vector<int>& values, std::size_t n) 
     std::vector<long long> latencies;
     latencies.reserve(n);
 
+    // Latency experiment: this is separate from throughput precisely because it
+    // does pay one clock measurement per push_back. It is useful for tail
+    // latency, not for aggregate insertion throughput.
     for (std::size_t index = 0; index < n; ++index) {
         std::atomic_signal_fence(std::memory_order_seq_cst);
         const auto start = Clock::now();
@@ -388,6 +410,8 @@ std::vector<std::size_t> make_random_indices(std::size_t n,
 
     const std::size_t count = access_count == 0 ? n : access_count;
     indices.reserve(count);
+    // Fixed-seed random indices make the access experiment reproducible. Both
+    // structures receive the same index sequence for the same n.
     std::mt19937_64 generator(seed);
     std::uniform_int_distribution<std::size_t> distribution(0, n - 1);
     for (std::size_t index = 0; index < count; ++index) {
@@ -403,6 +427,8 @@ long long measure_random_access(const std::vector<int>& values,
     const Array array = build_array<Array>(values, n);
 
     std::uint64_t checksum = 0;
+    // The array is fully built before timing begins, so this timed region
+    // isolates indexed access instead of mixing in construction cost.
     std::atomic_signal_fence(std::memory_order_seq_cst);
     const auto start = Clock::now();
     for (std::size_t probe = 0; probe < indices.size(); ++probe) {
@@ -458,12 +484,17 @@ void run_warmups(const std::vector<int>& values,
 
 std::vector<ResultRow> run_study(const std::vector<int>& values,
                                  const Config& config) {
+    // Core benchmark orchestration: choose sizes, validate correctness for each
+    // size, warm up, then record paired custom/baseline rows per trial.
     const std::vector<std::size_t> sizes = build_size_list(values.size(), config);
     std::vector<ResultRow> rows;
     rows.reserve(sizes.size() * static_cast<std::size_t>(config.repetitions) *
                  2U);
 
     for (std::size_t n : sizes) {
+        // What breaks if validation is removed? A faster result from a broken
+        // container could look like a performance win while returning the wrong
+        // logical array.
         validate_equal_outputs(values, n);
         const std::vector<std::size_t> access_indices =
             make_random_indices(n, config.random_accesses,
@@ -494,6 +525,8 @@ std::vector<ResultRow> run_study(const std::vector<int>& values,
 }
 
 void write_results(std::ostream& output, const std::vector<ResultRow>& rows) {
+    // Machine-readable output is written only after all measurements are done,
+    // keeping file I/O and formatting out of timed regions.
     output << "structure,n,trial,total_ns,ns_per_push,median_push_ns,"
               "p95_push_ns,p99_push_ns,max_push_ns,random_access_ns,"
               "checksum,estimated_bytes\n";

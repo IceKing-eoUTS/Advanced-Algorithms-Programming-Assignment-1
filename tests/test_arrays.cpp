@@ -25,6 +25,9 @@ public:
     explicit TestFailure(const std::string& message) : std::runtime_error(message) {}
 };
 
+// Core of the lightweight test framework: CHECK helpers throw TestFailure so a
+// single failing case can be reported by name without pulling in an external
+// dependency.
 std::string location(const char* file, int line) {
     std::ostringstream output;
     output << file << ':' << line << ": ";
@@ -81,6 +84,9 @@ void check_throws(Function&& function,
 
 template <typename Array>
 void compare_to_vector(const Array& array, const std::vector<int>& expected) {
+    // Reusable invariant check: the tested array must expose exactly the same
+    // logical sequence as std::vector. Many tests rely on this instead of
+    // retyping size/order/access assertions.
     CHECK_EQ(array.size(), expected.size());
     CHECK_EQ(array.empty(), expected.empty());
     for (std::size_t index = 0; index < expected.size(); ++index) {
@@ -124,6 +130,9 @@ void test_first_insertion_and_accessors() {
 }
 
 void test_insertion_around_migration_boundaries() {
+    // Boundary-focused test: powers of two and their neighbors are where
+    // migration begins or completes in the custom implementation, so off-by-one
+    // mistakes usually show up here.
     for (std::size_t boundary = 1; boundary <= 2048; boundary *= 2) {
         for (std::size_t n : {boundary > 0 ? boundary - 1 : 0,
                               boundary,
@@ -248,6 +257,8 @@ void test_move_only_values() {
 }
 
 struct Counted {
+    // Counted exposes ownership bugs. The invariant after every scope is
+    // constructions == destructions and live == 0.
     static inline int live = 0;
     static inline int constructions = 0;
     static inline int destructions = 0;
@@ -289,6 +300,10 @@ void test_no_leaks_or_double_destruction() {
     reset_counted();
 
     {
+        // This passes through several migration states, then clear() destroys
+        // exactly the live elements. What breaks if destroy_live_elements()
+        // visits a migrated slot twice? live would go negative or the sanitizer
+        // build would report invalid destruction.
         ResizableArray<Counted> array;
         for (int value = 0; value < 513; ++value) {
             array.emplace_back(value);
@@ -310,6 +325,8 @@ void test_no_leaks_or_double_destruction() {
 }
 
 struct ThrowingCopy {
+    // ThrowingCopy is designed to make migration construction fail on demand.
+    // It exercises the hardest exception path in ResizableArray::emplace_back.
     static inline int live = 0;
     static inline int copies_before_throw = -1;
 
@@ -355,6 +372,9 @@ void test_throwing_migration_keeps_container_valid() {
         array.emplace_back(10);
         CHECK_EQ(ThrowingCopy::live, 1);
 
+        // Tricky part under test: the second insertion starts migration from
+        // capacity 2. The new element must be rolled back if copying the old
+        // element into the new buffer throws.
         ThrowingCopy::copies_before_throw = 0;
         CHECK_THROWS_AS(array.emplace_back(20), std::runtime_error);
         CHECK_EQ(array.size(), std::size_t{1});
@@ -403,6 +423,8 @@ void test_randomised_differential_against_vector() {
     constexpr std::uint64_t seed = 0xC0FFEE1234ULL;
 
     try {
+        // Randomized differential testing finds combinations that hand-written
+        // tests may miss. The fixed seed keeps failures reproducible.
         std::mt19937_64 generator(seed);
         std::uniform_int_distribution<int> operation_distribution(0, 99);
         std::uniform_int_distribution<int> value_distribution(-500000, 500000);
@@ -471,6 +493,8 @@ void test_loading_supplied_random_input_file() {
 }
 
 void test_empty_malformed_and_partially_invalid_input_files() {
+    // Input parser tests cover both strict benchmark loading and lenient
+    // "collect the valid rows" behavior used to test partial failures.
     CsvLoadOptions strict;
     strict.require_header = true;
     strict.validate_sequential_index = true;
@@ -525,6 +549,8 @@ struct TestCase {
 } // namespace
 
 int main() {
+    // The test registry is deliberately explicit so learners can map each test
+    // name to the function that checks one implementation concern.
     const std::vector<TestCase> tests = {
         {"empty array behaviour", test_empty_array_behaviour},
         {"first insertion and accessors", test_first_insertion_and_accessors},

@@ -22,6 +22,9 @@ public:
     BaselineArray& operator=(BaselineArray&&) noexcept = default;
 
     void push_back(const T& value) {
+        // Core baseline behavior: delegate directly to std::vector. We do not
+        // call reserve(), because the benchmark is meant to expose ordinary
+        // vector growth and its occasional O(n) reallocation step.
         data_.push_back(value);
     }
 
@@ -51,6 +54,9 @@ public:
     }
 
     reference front() {
+        // std::vector::front() on an empty vector is undefined behavior. The
+        // wrapper checks explicitly so tests can compare this interface with
+        // ResizableArray's checked empty-array behavior.
         if (empty()) {
             throw std::out_of_range("BaselineArray::front on empty array");
         }
@@ -91,9 +97,15 @@ public:
     }
 
     [[nodiscard]] size_type capacity() const noexcept {
+        // Used only by the empirical study to estimate allocated element
+        // storage. It is not part of the custom array semantics being tested.
         return data_.capacity();
     }
 
 private:
+    // One invariant makes this wrapper intentionally boring: data_ is the sole
+    // owner of all elements. What breaks if a reserve() call is added here or
+    // before benchmarking? Reallocation spikes would be hidden, weakening the
+    // comparison with the deamortized custom array.
     std::vector<T> data_;
 };
