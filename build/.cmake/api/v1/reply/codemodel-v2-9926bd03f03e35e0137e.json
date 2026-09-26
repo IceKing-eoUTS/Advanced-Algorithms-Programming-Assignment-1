@@ -7,7 +7,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "array_headers::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-array_headers-Debug-15b566d7a5a31f3e564e.json",
+					"jsonFile" : "target-array_headers-Release-15b566d7a5a31f3e564e.json",
 					"name" : "array_headers",
 					"projectIndex" : 0
 				}
@@ -20,7 +20,7 @@
 						0
 					],
 					"build" : ".",
-					"jsonFile" : "directory-.-Debug-b5805d5c08fd3d92def4.json",
+					"jsonFile" : "directory-.-Release-b5805d5c08fd3d92def4.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.16"
@@ -37,7 +37,7 @@
 					]
 				}
 			],
-			"name" : "Debug",
+			"name" : "Release",
 			"projects" : 
 			[
 				{
@@ -65,35 +65,35 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "baseline_demo::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-baseline_demo-Debug-40cf94714ad5554cf84b.json",
+					"jsonFile" : "target-baseline_demo-Release-1ae42143ab40ec843009.json",
 					"name" : "baseline_demo",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "empirical_study::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-empirical_study-Debug-fb7af86c4574d445ad96.json",
+					"jsonFile" : "target-empirical_study-Release-003a92c547d2e68adf4d.json",
 					"name" : "empirical_study",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "generate_input::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-generate_input-Debug-277a56b7b51b76d26fe8.json",
+					"jsonFile" : "target-generate_input-Release-bed4292890255aa9dd25.json",
 					"name" : "generate_input",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "resizable_array_demo::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-resizable_array_demo-Debug-a6b91a496fb2eda1fa5e.json",
+					"jsonFile" : "target-resizable_array_demo-Release-068fccf9becf0045fafd.json",
 					"name" : "resizable_array_demo",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "test_arrays::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-test_arrays-Debug-954d1437afe70ee0ba54.json",
+					"jsonFile" : "target-test_arrays-Release-a736cbedee8d333a5d26.json",
 					"name" : "test_arrays",
 					"projectIndex" : 0
 				}

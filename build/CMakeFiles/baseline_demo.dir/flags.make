@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = @CMakeFiles\baseline_demo.dir\includes_CXX.rsp
 
-CXX_FLAGS = -g -std=c++20 -Wall -Wextra -Wpedantic
+CXX_FLAGS = -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic
 
