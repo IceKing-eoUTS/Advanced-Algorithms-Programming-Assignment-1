@@ -1,0 +1,214 @@
+WEBVTT
+
+1
+00:00:04.220 --> 00:00:13.920
+Colin Ice King-Eo: This project implements A vector-like resizable array in C++20. Its main idea is incremental migration.
+
+2
+00:00:14.040 --> 00:00:20.720
+Colin Ice King-Eo: Instead of moving every existing element during one append, it spreads that work across successive appends.
+
+3
+00:00:20.910 --> 00:00:24.809
+Colin Ice King-Eo: The template implementation lives in include.
+
+4
+00:00:24.970 --> 00:00:27.299
+Colin Ice King-Eo: Resizable array.hbp.
+
+5
+00:00:27.500 --> 00:00:35.150
+Colin Ice King-Eo: The baseline header is… wraps or… is wrapped around ordinary STD vector growth.
+
+6
+00:00:35.440 --> 00:00:39.739
+Colin Ice King-Eo: This SRC folder, source folder, contains demonstrations.
+
+7
+00:00:40.060 --> 00:00:41.789
+Colin Ice King-Eo: And the empirical study.
+
+8
+00:00:42.090 --> 00:00:45.310
+Colin Ice King-Eo: Tests contains correct checks and tools.
+
+9
+00:00:46.130 --> 00:00:49.250
+Colin Ice King-Eo: Contains the reproducible input generator.
+
+10
+00:01:02.130 --> 00:01:08.260
+Colin Ice King-Eo: The main fields are the current buffer, Which is… An optional old buffer.
+
+11
+00:01:08.670 --> 00:01:13.400
+Colin Ice King-Eo: The logical size, and the counters that track migration.
+
+12
+00:01:15.550 --> 00:01:17.600
+Colin Ice King-Eo: In prepare for ins.
+
+13
+00:01:25.470 --> 00:01:28.420
+Colin Ice King-Eo: In prepare for insert, right here.
+
+14
+00:01:28.620 --> 00:01:34.300
+Colin Ice King-Eo: Migration starts when the current buffer, which is half capacity, We just have capacity.
+
+15
+00:01:36.030 --> 00:01:41.990
+Colin Ice King-Eo: begin migration, Allocates a replacement with twice the capacity.
+
+16
+00:01:46.590 --> 00:01:54.019
+Colin Ice King-Eo: Each append constructs its new element directly in the replacement buffer and migrates at most one existing element.
+
+17
+00:01:54.540 --> 00:01:57.370
+Colin Ice King-Eo: The limit is defined here.
+
+18
+00:01:58.350 --> 00:02:03.149
+Colin Ice King-Eo: By K migration, work per insertion, which is 1.
+
+19
+00:02:03.920 --> 00:02:06.439
+Colin Ice King-Eo: The balance element transfer
+
+20
+00:02:06.790 --> 00:02:17.929
+Colin Ice King-Eo: work per append. The constant time claim assumes constant cost allocation and element operations. It is not a guarantee of real-world execute.
+
+21
+00:02:18.090 --> 00:02:21.489
+Colin Ice King-Eo: It's not a guarantee of constant real-world execution time.
+
+22
+00:02:26.850 --> 00:02:28.590
+Colin Ice King-Eo: Yes.
+
+23
+00:02:46.910 --> 00:02:53.890
+Colin Ice King-Eo: The hardest part for me to reason about was the order of operations when element construction can throw.
+
+24
+00:02:54.220 --> 00:03:06.180
+Colin Ice King-Eo: The new element is constructed first. Migration then runs inside this try block, and the public size increases only after migration succeeds. If this migration throws.
+
+25
+00:03:06.610 --> 00:03:20.040
+Colin Ice King-Eo: The catch block destroys the newly constructed element and re-throws the exception. Otherwise, an unsuccessful append could leave an extra live object at the logical size that the logical size does not account for.
+
+26
+00:03:20.210 --> 00:03:23.899
+Colin Ice King-Eo: This test con- this test this test checks that.
+
+27
+00:03:25.150 --> 00:03:26.600
+Colin Ice King-Eo: situation.
+
+28
+00:03:29.950 --> 00:03:36.870
+Colin Ice King-Eo: It inserts 10, forces copying during the next migration to fail, and checks that the size remains 1.
+
+29
+00:03:37.060 --> 00:03:45.480
+Colin Ice King-Eo: The original value is still 10, and only one object remains live. It then disables the forced failure and retries successfully.
+
+30
+00:03:45.780 --> 00:03:52.400
+Colin Ice King-Eo: This checks a specific exception path, rather than proving safety for every possible user-defined type.
+
+31
+00:04:25.220 --> 00:04:30.940
+Colin Ice King-Eo: The key invariant describes where each logical element lives while migration is active.
+
+32
+00:04:31.070 --> 00:04:38.750
+Colin Ice King-Eo: Indices before migrated are in the new buffer. Indices from migrated… Indices from migrated up.
+
+33
+00:04:39.880 --> 00:04:47.760
+Colin Ice King-Eo: to migration size remain in the old buffer. Newly appended elements starting at migration size are in the new buffer.
+
+34
+00:04:48.150 --> 00:04:50.550
+Colin Ice King-Eo: Begin migration establishes the
+
+35
+00:04:50.840 --> 00:05:00.849
+Colin Ice King-Eo: Begin migration establishes this by recording the old buffer and its life size, setting the migrated count to zero, and installing the replacement buffer.
+
+36
+00:05:02.010 --> 00:05:02.700
+Colin Ice King-Eo: Me.
+
+37
+00:05:04.150 --> 00:05:12.570
+Colin Ice King-Eo: Migrate 1 maintains the invariant by constructing one destination object, destroying its source, and advancing the counter.
+
+38
+00:05:19.930 --> 00:05:20.700
+Colin Ice King-Eo: Ella.
+
+39
+00:05:22.170 --> 00:05:29.360
+Colin Ice King-Eo: Element at… Relies on these regions to choose the correct buffer using a fixed number of comparisons.
+
+40
+00:05:29.480 --> 00:05:43.140
+Colin Ice King-Eo: For example, after appending 5 values to a fresh array, index 0 has migrated. Indices 1 to 3 remain in the old buffer, and index 4 is newly constructed in the new buffer.
+
+41
+00:05:43.320 --> 00:05:47.699
+Colin Ice King-Eo: Indexing must preserve the logical order across all three regions.
+
+42
+00:05:48.760 --> 00:05:49.510
+Colin Ice King-Eo: Justin.
+
+43
+00:05:59.250 --> 00:06:06.679
+Colin Ice King-Eo: A specific breaking change would be replacing migrated with zero at the start of this old buffer destruction loop.
+
+44
+00:06:06.920 --> 00:06:21.969
+Colin Ice King-Eo: The old objects before migrated have already been destroyed by Migrate 1. Starting at 0 would attempt to destroy these objects again, after their lifetimes had ended. For resource-owning types, this could cause invalid cleanup or memory corruption.
+
+45
+00:06:22.180 --> 00:06:32.540
+Colin Ice King-Eo: The correct loop starts at migrated before… because the only remaining middle region is still alive in the old buffer. The counted test helps detect this
+
+46
+00:06:32.760 --> 00:06:36.410
+Colin Ice King-Eo: Decounted test helps detect this mistake.
+
+47
+00:06:37.360 --> 00:06:45.160
+Colin Ice King-Eo: By retracing… by tracking live objects and checking that construction and destruction counts match after clearing the array.
+
+48
+00:06:58.890 --> 00:07:01.100
+Colin Ice King-Eo: And this right here is the…
+
+49
+00:07:05.020 --> 00:07:12.379
+Colin Ice King-Eo: This right here is where it's the… this right here is where the test Would fail, in case the…
+
+50
+00:07:12.590 --> 00:07:15.009
+Colin Ice King-Eo: Destroy live elements function breaks.
+
+51
+00:07:21.170 --> 00:07:21.950
+Colin Ice King-Eo: Yes.
+
+52
+00:07:36.690 --> 00:07:56.439
+Colin Ice King-Eo: The empirical study compares both structures using the same input. This comment explains why bulk insertion timing is separate from per-operation latency. Timing every append would clock… would add clock call overhead to the throughput measurement. The generator uses a supplied seed to produce repeatable input data.
+
+53
+00:07:56.590 --> 00:08:10.529
+Colin Ice King-Eo: Together, these programs support correctness checks and practical comparison. The central implementation idea is bounded migration work, supported by an explicit storage invariant and careful management of object lifetimes.
+
